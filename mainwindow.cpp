@@ -182,7 +182,7 @@ bool MainWindow::checkEndGameCondition()
 
         secondCellIndex = getNextNonEmptyCell(firstCellIndex + 1);
 
-        if (field[firstCellIndex / NUM_ROWS][firstCellIndex % NUM_COLUMS] > field[secondCellIndex / NUM_ROWS][secondCellIndex % NUM_COLUMS])
+        if (getCellByLinearIndex(firstCellIndex) > getCellByLinearIndex(secondCellIndex))
         {
             isFieldSorted = false;
             break;
@@ -200,7 +200,7 @@ int MainWindow::getNextNonEmptyCell(const int startIndex)
 
     while (index < NUM_ROWS * NUM_COLUMS)
     {
-        if (field[index / NUM_ROWS][index % NUM_COLUMS]) break;
+        if (getCellByLinearIndex(index)) break;
 
         index++;
     }
@@ -239,17 +239,14 @@ void MainWindow::generateField()
 
 		wasNumberUsed[number] = true;
 
-		field[i / NUM_ROWS][i % NUM_COLUMS] = number;
+		getCellByLinearIndex(i) = number;
 	}
 
 	int sum = 0;
 
 	for (int i = 0; i < NUM_ROWS * NUM_COLUMS; i++)
 	{
-		int y1 = i / NUM_ROWS;
-		int x1 = i % NUM_COLUMS;
-
-		int value1 = field[y1][x1];
+		int value1 = getCellByLinearIndex(i);
 
 		if (value1)
 		{
@@ -257,10 +254,7 @@ void MainWindow::generateField()
 
 			for (int j = i + 1; j < NUM_ROWS * NUM_COLUMS; j++)
 			{
-				int y2 = j / NUM_ROWS;
-				int x2 = j % NUM_COLUMS;
-
-				int value2 = field[y2][x2];
+				int value2 = getCellByLinearIndex(j);
 
 				if (value2 && value2 < value1) k++;
 			}
@@ -269,7 +263,7 @@ void MainWindow::generateField()
 		}
 		else
 		{
-			sum += (y1 + 1);
+			sum += ((i / NUM_ROWS) + 1);
 		}
 	}
 
@@ -302,4 +296,12 @@ void MainWindow::generateField()
 				items[field[row][col] - 1]->setPos(cellWidth * col, cellHeight * row);
 		}
 	}
+}
+
+int& MainWindow::getCellByLinearIndex(const int linearIndex)
+{
+    int row = linearIndex / NUM_ROWS;
+    int col = linearIndex % NUM_COLUMS;
+
+    return field[row][col];
 }

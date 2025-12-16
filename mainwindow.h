@@ -49,6 +49,8 @@ class MainWindow : public QMainWindow
 
         int cellWidth, cellHeight;
 
+        int& getCellByLinearIndex(const int);
+
     private slots:
 
         void onTimerTick();
