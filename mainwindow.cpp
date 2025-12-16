@@ -196,6 +196,12 @@ void MainWindow::makeMove(const int key)
         movesCount++;
 
         movesCountLabel->setText(tr("Ходов: ") + QString::number(movesCount));
+
+        if (checkEndGameCondition())
+        {
+            winMessageLabel->setText(tr("Вы выиграли!"));
+            timer->stop();
+        }
     }
 }
 
@@ -226,4 +232,45 @@ void MainWindow::onTimerTick()
     QString secondsStr = (seconds < 10 ? "0" : "") + QString::number(seconds);
 
     elaspedTimeLabel->setText(tr("Время: ") + minutesStr + ":" + secondsStr);
+}
+
+bool MainWindow::checkEndGameCondition()
+{
+    bool isFieldSorted = true;
+
+    int firstCellIndex = 0;
+    int secondCellIndex;
+
+    while (true)
+    {
+        firstCellIndex = getNextNonEmptyCell(firstCellIndex);
+
+        if (firstCellIndex >= 15) break;
+
+        secondCellIndex = getNextNonEmptyCell(firstCellIndex + 1);
+
+        if (field[firstCellIndex / 4][firstCellIndex % 4] > field[secondCellIndex / 4][secondCellIndex % 4])
+        {
+            isFieldSorted = false;
+            break;
+        } 
+
+        firstCellIndex = secondCellIndex;
+    }
+
+    return isFieldSorted;
+}
+
+int MainWindow::getNextNonEmptyCell(const int startIndex)
+{
+    int index = startIndex;
+
+    while (index < 16)
+    {
+        if (field[index / 4][index % 4]) break;
+
+        index++;
+    }
+
+    return index;
 }

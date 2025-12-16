@@ -38,6 +38,10 @@ class MainWindow : public QMainWindow
 
         QTimer *timer;
 
+        bool checkEndGameCondition();
+
+        int getNextNonEmptyCell(const int);
+
     private slots:
 
         void onTimerTick();
