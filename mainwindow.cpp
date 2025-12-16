@@ -44,9 +44,15 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
     QGraphicsScene *graphicsScene = new QGraphicsScene();
     QGraphicsView *graphicsSceneView = new QGraphicsView(graphicsScene);
 
-    for (int i = 0; i < 15; i++)
+    for (int i = 0; i < NUM_ROWS * NUM_COLUMS - 1; i++)
     {
         QImage image(QString::number(i + 1) + ".png");
+
+        if (i == 0)
+        {
+            cellWidth = image.width();
+            cellHeight = image.height();            
+        }
 
         QPixmap pixmap = QPixmap::fromImage(image);
 
@@ -100,9 +106,9 @@ void MainWindow::makeMove(const int key)
 
     bool canMakeMove = false;
 
-    if      (key == Qt::Key_Up)    canMakeMove = emptyCellRow != 3;
+    if      (key == Qt::Key_Up)    canMakeMove = emptyCellRow != NUM_ROWS - 1;
     else if (key == Qt::Key_Down)  canMakeMove = emptyCellRow != 0;
-    else if (key == Qt::Key_Left)  canMakeMove = emptyCellCol != 3;
+    else if (key == Qt::Key_Left)  canMakeMove = emptyCellCol != NUM_COLUMS - 1;
     else if (key == Qt::Key_Right) canMakeMove = emptyCellCol != 0;
 
     if (canMakeMove)
@@ -114,7 +120,7 @@ void MainWindow::makeMove(const int key)
         else if (key == Qt::Key_Left)  { cellCol = emptyCellCol + 1; cellRow = emptyCellRow; }
         else if (key == Qt::Key_Right) { cellCol = emptyCellCol - 1; cellRow = emptyCellRow; }
 
-        items[field[cellRow][cellCol] - 1]->setPos(emptyCellCol * 150, emptyCellRow * 150);
+        items[field[cellRow][cellCol] - 1]->setPos(emptyCellCol * cellWidth, emptyCellRow * cellHeight);
 
         std::swap(field[cellRow][cellCol], field[emptyCellRow][emptyCellCol]);
         
@@ -134,14 +140,14 @@ void MainWindow::makeMove(const int key)
 
 void MainWindow::getEmptyCellCoords(int& outRow, int& outCol)
 {
-    for (int i = 0; i < 4; i++)
+    for (int row = 0; row < NUM_ROWS; row++)
     {
-        for (int j = 0; j < 4; j++)
+        for (int col = 0; col < NUM_COLUMS; col++)
         {
-            if (!field[i][j])
+            if (!field[row][col])
             {
-                outRow = i;
-                outCol = j;
+                outRow = row;
+                outCol = col;
                 return;
             }
         }
@@ -172,11 +178,11 @@ bool MainWindow::checkEndGameCondition()
     {
         firstCellIndex = getNextNonEmptyCell(firstCellIndex);
 
-        if (firstCellIndex >= 15) break;
+        if (firstCellIndex >= NUM_ROWS * NUM_COLUMS - 1) break;
 
         secondCellIndex = getNextNonEmptyCell(firstCellIndex + 1);
 
-        if (field[firstCellIndex / 4][firstCellIndex % 4] > field[secondCellIndex / 4][secondCellIndex % 4])
+        if (field[firstCellIndex / NUM_ROWS][firstCellIndex % NUM_COLUMS] > field[secondCellIndex / NUM_ROWS][secondCellIndex % NUM_COLUMS])
         {
             isFieldSorted = false;
             break;
@@ -192,9 +198,9 @@ int MainWindow::getNextNonEmptyCell(const int startIndex)
 {
     int index = startIndex;
 
-    while (index < 16)
+    while (index < NUM_ROWS * NUM_COLUMS)
     {
-        if (field[index / 4][index % 4]) break;
+        if (field[index / NUM_ROWS][index % NUM_COLUMS]) break;
 
         index++;
     }
@@ -220,28 +226,28 @@ void MainWindow::restartGame()
 
 void MainWindow::generateField()
 {
-    bool wasNumberUsed[16] = { false };
+    bool wasNumberUsed[NUM_ROWS * NUM_COLUMS] = { false };
 
-	for (int i = 0; i < 16; i++)
+	for (int i = 0; i < NUM_ROWS * NUM_COLUMS; i++)
 	{
-		quint32 number = QRandomGenerator::global()->bounded(16);
+		quint32 number = QRandomGenerator::global()->bounded(NUM_ROWS * NUM_COLUMS);
 
 		while (wasNumberUsed[number])
 		{
-			number = QRandomGenerator::global()->bounded(16);
+			number = QRandomGenerator::global()->bounded(NUM_ROWS * NUM_COLUMS);
 		}
 
 		wasNumberUsed[number] = true;
 
-		field[i % 4][i / 4] = number;
+		field[i / NUM_ROWS][i % NUM_COLUMS] = number;
 	}
 
 	int sum = 0;
 
-	for (int i = 0; i < 16; i++)
+	for (int i = 0; i < NUM_ROWS * NUM_COLUMS; i++)
 	{
-		int y1 = i / 4;
-		int x1 = i % 4;
+		int y1 = i / NUM_ROWS;
+		int x1 = i % NUM_COLUMS;
 
 		int value1 = field[y1][x1];
 
@@ -249,10 +255,10 @@ void MainWindow::generateField()
 		{
 			int k = 0;
 
-			for (int j = i + 1; j < 16; j++)
+			for (int j = i + 1; j < NUM_ROWS * NUM_COLUMS; j++)
 			{
-				int y2 = j / 4;
-				int x2 = j % 4;
+				int y2 = j / NUM_ROWS;
+				int x2 = j % NUM_COLUMS;
 
 				int value2 = field[y2][x2];
 
@@ -269,31 +275,31 @@ void MainWindow::generateField()
 
 	if (sum % 2)
 	{
-		int fieldCopy[4][4];
+		int fieldCopy[NUM_ROWS][NUM_COLUMS];
 
-        for (int y = 0; y < 4; y++)
+        for (int row = 0; row < NUM_ROWS; row++)
         {
-            for (int x = 0; x < 4; x++)
+            for (int col = 0; col < NUM_COLUMS; col++)
             {
-                fieldCopy[y][x] = field[y][x];
+                fieldCopy[row][col] = field[row][col];
             }
         }
 
-        for (int y = 0; y < 4; y++)
+        for (int row = 0; row < NUM_ROWS; row++)
         {
-            for (int x = 0; x < 4; x++)
+            for (int col = 0; col < NUM_COLUMS; col++)
             {
-                field[y][x] = fieldCopy[x][3 - y];
+                field[row][col] = fieldCopy[col][NUM_COLUMS - 1 - row];
             }
         }
 	}
 
-    for (int y = 0; y < 4; y++)
+    for (int row = 0; row < NUM_ROWS; row++)
 	{
-		for (int x = 0; x < 4; x++)
+		for (int col = 0; col < NUM_COLUMS; col++)
 		{
-			if (field[y][x])
-				items[field[y][x] - 1]->setPos(150 * x, 150 * y);
+			if (field[row][col])
+				items[field[row][col] - 1]->setPos(cellWidth * col, cellHeight * row);
 		}
 	}
 }

@@ -27,7 +27,10 @@ class MainWindow : public QMainWindow
 
         QGraphicsPixmapItem *items[15];
 
-        int field[4][4];
+        static const int NUM_ROWS = 4;
+        static const int NUM_COLUMS = 4;
+
+        int field[NUM_ROWS][NUM_COLUMS];
 
         void makeMove(const int);
 
@@ -43,6 +46,8 @@ class MainWindow : public QMainWindow
         int getNextNonEmptyCell(const int);
 
         void generateField();
+
+        int cellWidth, cellHeight;
 
     private slots:
 
