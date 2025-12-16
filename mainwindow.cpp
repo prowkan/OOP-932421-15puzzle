@@ -53,82 +53,7 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
         items[i] = graphicsScene->addPixmap(pixmap);
     }
 
-    bool wasNumberUsed[16] = { false };
-
-	for (int i = 0; i < 16; i++)
-	{
-		quint32 number = QRandomGenerator::global()->bounded(16);
-
-		while (wasNumberUsed[number])
-		{
-			number = QRandomGenerator::global()->bounded(16);
-		}
-
-		wasNumberUsed[number] = true;
-
-		field[i % 4][i / 4] = number;
-	}
-
-	int sum = 0;
-
-	for (int i = 0; i < 16; i++)
-	{
-		int y1 = i / 4;
-		int x1 = i % 4;
-
-		int value1 = field[y1][x1];
-
-		if (value1)
-		{
-			int k = 0;
-
-			for (int j = i + 1; j < 16; j++)
-			{
-				int y2 = j / 4;
-				int x2 = j % 4;
-
-				int value2 = field[y2][x2];
-
-				if (value2 && value2 < value1) k++;
-			}
-
-			sum += k;
-		}
-		else
-		{
-			sum += (y1 + 1);
-		}
-	}
-
-	if (sum % 2)
-	{
-		int fieldCopy[4][4];
-
-        for (int y = 0; y < 4; y++)
-        {
-            for (int x = 0; x < 4; x++)
-            {
-                fieldCopy[y][x] = field[y][x];
-            }
-        }
-
-        for (int y = 0; y < 4; y++)
-        {
-            for (int x = 0; x < 4; x++)
-            {
-                field[y][x] = fieldCopy[x][3 - y];
-            }
-        }
-	}
-
-    for (int y = 0; y < 4; y++)
-	{
-		for (int x = 0; x < 4; x++)
-		{
-			if (field[y][x])
-				items[field[y][x] - 1]->setPos(150 * x, 150 * y);
-		}
-	}
+    generateField();
 
     mainVerticalLayout->addWidget(graphicsSceneView);
 
@@ -143,6 +68,8 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
 
     timer = new QTimer();
     connect(timer, &QTimer::timeout, this, &MainWindow::onTimerTick);
+
+    connect(newGameButton, &QPushButton::clicked, this, &MainWindow::restartGame);
 };
 
 MainWindow::~MainWindow()
@@ -273,4 +200,100 @@ int MainWindow::getNextNonEmptyCell(const int startIndex)
     }
 
     return index;
+}
+
+void MainWindow::restartGame()
+{
+    timer->stop();
+
+    movesCount = 0;
+    elaspedTime = 0;
+
+    movesCountLabel->setText(tr("Ходов: 0"));
+    elaspedTimeLabel->setText(tr("Время: 00:00"));
+    winMessageLabel->setText(tr(""));
+
+    setFocus();
+
+    generateField();
+}
+
+void MainWindow::generateField()
+{
+    bool wasNumberUsed[16] = { false };
+
+	for (int i = 0; i < 16; i++)
+	{
+		quint32 number = QRandomGenerator::global()->bounded(16);
+
+		while (wasNumberUsed[number])
+		{
+			number = QRandomGenerator::global()->bounded(16);
+		}
+
+		wasNumberUsed[number] = true;
+
+		field[i % 4][i / 4] = number;
+	}
+
+	int sum = 0;
+
+	for (int i = 0; i < 16; i++)
+	{
+		int y1 = i / 4;
+		int x1 = i % 4;
+
+		int value1 = field[y1][x1];
+
+		if (value1)
+		{
+			int k = 0;
+
+			for (int j = i + 1; j < 16; j++)
+			{
+				int y2 = j / 4;
+				int x2 = j % 4;
+
+				int value2 = field[y2][x2];
+
+				if (value2 && value2 < value1) k++;
+			}
+
+			sum += k;
+		}
+		else
+		{
+			sum += (y1 + 1);
+		}
+	}
+
+	if (sum % 2)
+	{
+		int fieldCopy[4][4];
+
+        for (int y = 0; y < 4; y++)
+        {
+            for (int x = 0; x < 4; x++)
+            {
+                fieldCopy[y][x] = field[y][x];
+            }
+        }
+
+        for (int y = 0; y < 4; y++)
+        {
+            for (int x = 0; x < 4; x++)
+            {
+                field[y][x] = fieldCopy[x][3 - y];
+            }
+        }
+	}
+
+    for (int y = 0; y < 4; y++)
+	{
+		for (int x = 0; x < 4; x++)
+		{
+			if (field[y][x])
+				items[field[y][x] - 1]->setPos(150 * x, 150 * y);
+		}
+	}
 }

@@ -42,7 +42,11 @@ class MainWindow : public QMainWindow
 
         int getNextNonEmptyCell(const int);
 
+        void generateField();
+
     private slots:
 
         void onTimerTick();
+
+        void restartGame();
 };
