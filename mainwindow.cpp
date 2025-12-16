@@ -9,6 +9,7 @@
 #include <QGraphicsPixmapItem>
 #include <QKeyEvent>
 #include <QTimer>
+#include <QRandomGenerator>
 
 MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent) 
 {
@@ -50,12 +51,84 @@ MainWindow::MainWindow(QWidget* parent) : QMainWindow(parent)
         QPixmap pixmap = QPixmap::fromImage(image);
 
         items[i] = graphicsScene->addPixmap(pixmap);
-        items[i]->setPos((i % 4) * 150, (i / 4) * 150);
-
-        field[i / 4][i % 4] = i + 1;
     }
 
-    field[3][3] = 0;
+    bool wasNumberUsed[16] = { false };
+
+	for (int i = 0; i < 16; i++)
+	{
+		quint32 number = QRandomGenerator::global()->bounded(16);
+
+		while (wasNumberUsed[number])
+		{
+			number = QRandomGenerator::global()->bounded(16);
+		}
+
+		wasNumberUsed[number] = true;
+
+		field[i % 4][i / 4] = number;
+	}
+
+	int sum = 0;
+
+	for (int i = 0; i < 16; i++)
+	{
+		int y1 = i / 4;
+		int x1 = i % 4;
+
+		int value1 = field[y1][x1];
+
+		if (value1)
+		{
+			int k = 0;
+
+			for (int j = i + 1; j < 16; j++)
+			{
+				int y2 = j / 4;
+				int x2 = j % 4;
+
+				int value2 = field[y2][x2];
+
+				if (value2 && value2 < value1) k++;
+			}
+
+			sum += k;
+		}
+		else
+		{
+			sum += (y1 + 1);
+		}
+	}
+
+	if (sum % 2)
+	{
+		int fieldCopy[4][4];
+
+        for (int y = 0; y < 4; y++)
+        {
+            for (int x = 0; x < 4; x++)
+            {
+                fieldCopy[y][x] = field[y][x];
+            }
+        }
+
+        for (int y = 0; y < 4; y++)
+        {
+            for (int x = 0; x < 4; x++)
+            {
+                field[y][x] = fieldCopy[x][3 - y];
+            }
+        }
+	}
+
+    for (int y = 0; y < 4; y++)
+	{
+		for (int x = 0; x < 4; x++)
+		{
+			if (field[y][x])
+				items[field[y][x] - 1]->setPos(150 * x, 150 * y);
+		}
+	}
 
     mainVerticalLayout->addWidget(graphicsSceneView);
 
